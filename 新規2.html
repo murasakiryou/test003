@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <label for="num">人数:</label>
+  <input type="number" id="num" name="num" min="1" max="10">
+  <button onclick="generateFields()">生成</button>
+  <div id="inputFields"></div>
+  <button id="nextPage" onclick="goToNextPage()" disabled>次へ</button>
+
+  <script>
+    var names = [];
+    var selectedNames = [];
+    var currentPage = 1;
+    var matchResults = {};
+
+    function generateFields() {
+      var num = document.getElementById('num').value;
+      var inputFields = document.getElementById('inputFields');
+      inputFields.innerHTML = '';
+      for (var i = 0; i < num; i++) {
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'name' + i;
+        input.id = 'name' + i;
+        input.oninput = checkInputs;
+        inputFields.appendChild(input);
+        inputFields.appendChild(document.createElement('br'));
+      }
+    }
+
+    function checkInputs() {
+      var num = document.getElementById('num').value;
+      var allFilled = true;
+      names = [];
+      for (var i = 0; i < num; i++) {
+        var input = document.getElementById('name' + i);
+        if (input.value === '') {
+          allFilled = false;
+          break;
+        }
+        names.push(input.value);
+      }
+      document.getElementById('nextPage').disabled = !allFilled;
+    }
+
+    function goToNextPage() {
+      document.body.innerHTML = '<h1>' + names[currentPage - 1] + 'さん選択してください、いない場合は自分を選択してください</h1>';
+      for (var i = 0; i < names.length; i++) {
+        var button = document.createElement('button');
+        button.innerHTML = names[i];
+        button.onclick = function(e) { selectName(e.target.innerHTML); };
+        document.body.appendChild(button);
+      }
+    }
+
+    function selectName(name) {
+      selectedNames.push(name);
+      if (selectedNames.length < names.length) {
+        currentPage++;
+        goToNextPage();
+      } else {
+        goToFinalPage();
+      }
+    }
+
+    function goToFinalPage() {
+      document.body.innerHTML = '<h1>最終ページ</h1>';
+      checkMatches();
+      for (var i = 0; i < names.length; i++) {
+        var button = document.createElement('button');
+        button.innerHTML = names[i];
+        button.onclick = function(e) { showMatchResult(e.target.innerHTML); };
+        document.body.appendChild(button);
+      }
+    }
+
+    function showMatchResult(name) {
+      var result = matchResults[name];
+      if (result.length === 0) {
+        alert(name + 'さんには相思相愛相手はいません');
+      } else {
+        var message = name + 'さんの相思相愛相手は';
+        for (var i = 0; i < result.length; i++) {
+          message += result[i] + 'さん';
+          if (i < result.length - 1) {
+            message += '、';
+          }
+        }
+        alert(message);
+      }
+    }
+
+    function checkMatches() {
+      for (var i = 0; i < names.length; i++) {
+        matchResults[names[i]] = [];
+        for (var j = 0; j < names.length; j++) {
+          if (i != j && selectedNames[i] == names[j] && selectedNames[j] == names[i]) {
+            matchResults[names[i]].push(names[j]);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
